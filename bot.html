@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" rel="stylesheet">
+    <link rel="stylesheet" href="ressources/css/tabulator.min.css">
+    <style>
+      .title{
+        font-size: 20px;
+        font-weight: bold;
+      }
+      #bloc-top,#bloc-stats,#bloc-logs{
+        display:block;
+      }
+      #bloc-trading,#bloc-results,#bloc-widget-graph,#bloc-widget-btc{
+        display:inline-block;
+      }
+      .ads{
+        display:none;
+      }
+
+      #boutonPanicSellBuy{
+        height:60px;
+        width:200px;
+      }
+
+      /*flex*/
+      .header-container {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        align-content: stretch;
+        align-items: flex-start;
+      }
+      .header-item{
+        order: 0;
+        flex: 0 1 auto;
+        align-self: auto;
+      }
+      .bloc-item{
+        order: 0;
+        flex: 0 1 auto;
+        align-self: auto;
+      }
+
+      #bloc-trading{
+        width:300px;
+      }
+
+
+    </style>
+  </head>
+  <body>
+    <div id="content" style="cursor: default !important;">
+
+
+      <div id="bloc-top">
+        <div class="header-container">
+          <!-- start bloc top -->
+          <div id="bloc-trading" class="header-item">
+            <div class="header-item title">Binance Bot</div>
+            <br/>
+            <br/>
+            <div>CURRENT POSITION</div>
+            <div>Currency: <span id="positionCurrency"></span></div>
+            <div>Instant%: <span id="positionProfit"></span> (<span id="positionTime"></span>)</div>
+            <div><label><input id="checkboxAutoSellBuy" type="checkbox" checked disabled>automatic sell & buy</label></div>
+            <br/>
+            <br/>
+            <div>
+              <button id="boutonPanicSellBuy" disabled>PANIC SELL</button>
+              <!-- require another click to buy another currency -->
+            </div>
+          </div>
+
+
+          <div id="bloc-results" class="header-item">
+            <table id="table-results">
+              <thead>
+              <tr><th></th><th></th></tr>
+              </thead>
+              <tbody>
+                <tr><td>time: </td><td id="totalTime"></td></tr>
+                <tr><td>profit: </td><td id="totalProfit"></td></tr>
+                <tr><td>moneyStart: </td><td id="moneyStart"></td></tr>
+                <tr><td>moneyLastSell: </td><td id="moneyLastSell"></td></tr>
+                <tr><td>moneyEstimated: </td><td id="moneyEstimated"></td></tr>
+                <!--
+                  <tr><td>perfVsHold: </td><td id="perfVsHold"></td></tr>
+                  <tr><td>status: </td><td id="status"></td></tr>
+                -->
+              </tbody>
+            </table>
+
+            <!-- TODO:
+              perfVsHold + status
+
+              status: UP/DOWN
+              reason:
+                - BTC dump
+                - BTC pump (to be verified)
+                - Nothings to buy (>2% last period)
+            -->
+          </div>
+
+          <div class="header-item"></div>
+
+          <div id="bloc-widget-graph" class="header-item">
+            <div id="widget-graph"></div>
+          </div>
+
+          <div id="bloc-widget-btc" class="header-item">
+            Node.js <script>document.write(process.versions.node)</script>
+            Chromium <script>document.write(process.versions.chrome)</script>
+            Electron <script>document.write(process.versions.electron)</script>
+
+            <!-- TradingView Widget BEGIN (https://www.tradingview.com/widget/market-overview/) -->
+            <span id="tradingview-copyright" class="ads">
+              <a ref="nofollow noopener" target="_blank" href="http://fr.tradingview.com" style="color: rgb(173, 174, 176); font-family: &quot;Trebuchet MS&quot;, Tahoma, Arial, sans-serif; font-size: 13px;">CCotations des marchés par <span style="color: #3BB3E4">TradingView</span></a>
+            </span>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js">
+                {
+                    "showChart": false,
+                    "locale": "fr",
+                    "width": "285",
+                    "height": "255",
+                    "tabs": [
+                    {
+                        "title": "Indices",
+                        "symbols": [
+                            {
+                                "s": "BITFINEX:ETHUSD",
+                                "d": "Ethereum/Dollar"
+                            },
+                            {
+                                "s": "BITFINEX:BTCUSD",
+                                "d": "Bitcoin/Dollar"
+                            },
+                            {
+                                "s": "COINBASE:BTCEUR",
+                                "d": "Bitcoin/Euro"
+                            }
+                        ]
+                    }
+                  ]
+                }
+            </script>
+            <!-- TradingView Widget END -->
+          </div>
+
+          <!-- end bloc top -->
+        </div>
+      </div>
+
+
+      <div id="bloc-stats">
+        <!-- COINS RADAR -->
+        <div id="table-stats" style="display:none;"></div>
+      </div>
+
+
+      <div id="bloc-logs">
+        <!-- LOGS -->
+        <div id="table-logs"></div>
+      </div>
+
+    </div>
+
+
+    <script>window.$ = window.jQuery = require('jquery');</script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
+    <script>
+      require('./ressources/js/tabulator.min.js')
+      require('./bot.js')
+    </script>
+    <script>
+        $("#table-stats").tabulator({
+          height:"250px",
+          columns:[
+            {title:"Currency", field:"symbol", sorter:"string", frozen:true},  //, width:100}
+            {title:"Last 1 second", field:"p0", sorter:"number"},
+            {title:"Last 1 min", field:"p1", sorter:"number"},
+            {title:"1-5 mins ago", field:"p1to5", sorter:"number"},
+            {title:"5-10 mins ago", field:"p5to10", sorter:"number"},
+            {title:"10-15 mins ago", field:"p10to15", sorter:"number"},
+        ]
+      });
+      /*
+      Price (BTC)
+      24h % change
+      24h volume (BTC)
+      Market Cap
+      P/V **
+      */
+
+      $("#table-logs").tabulator({
+          //addRowPos:"bottom",
+          addRowPos:"top",
+          height:"150px",
+          columns:[
+              {title:"Date", field:"date", sorter:"date", frozen:true, width:'20%'},
+              {title:"Detail", field:"detail", sorter:"string", width:'80%'},
+          ]
+      });
+    </script>
+
+
+  </body>
+</html>
