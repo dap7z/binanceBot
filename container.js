@@ -45,6 +45,7 @@ let tabTradingView = tabGroup.addTab({
     //ready: function(tab){openTabDevTools(tab)}
 });
 
+let tabTradingView2 = null;
 
 let tabBot = tabGroup.addTab({
     title: 'BinanceBot',
@@ -71,7 +72,6 @@ let tabTestUserAgent = tabGroup.addTab({
     closable: true,
     active: false
 });
-
 
 
 const { ipcRenderer } = require('electron');
@@ -141,6 +141,22 @@ ipcRenderer.on('graph-new-values', (event, params) => {
         graphNewValuesFirstTime = false;
         //graph is ready, we can now pass to bot tab :
         tabBot.activate();
+
+        //open the chart in a new tab for user interaction:
+        let graphUrl = 'https://www.tradingview.com/chart/bJNasads';
+        tabTradingView2 = tabGroup.addTab({
+            title: 'TradingViewGraph',
+            src: graphUrl,
+            webviewAttributes: {
+                'nodeintegration': true,
+                'useragent':useragent,
+                //no injector.js
+            },
+            icon: 'fa fa-home',
+            visible: true,
+            closable: true,
+            active: false,
+        });
     }
 })
 

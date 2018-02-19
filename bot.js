@@ -21,10 +21,32 @@ console.error = function(obj){
 //=========================================================
 
 
+tabGraphValues = [];    //global
 ipcRenderer.on('graph-new-values', (event, params) => {
     //to pass here, graph-new-values message had to be redirected from :
     //injector.js -> main.js -> container.js -> bot.js
     console.log('bot.js on graph-new-values     SMA:'+ params.SMA +" DP0:"+ params.DP0 +" ["+ params.timestamp +"]");
+
+    tabGraphValues.push(params);
+});
+
+
+let eachMinute = window.setInterval(function(){
+
+    nbValues = tabGraphValues.length;
+    let totalSMA = 0;
+    let totalDP0 = 0;
+    for (var i = 0; i < nbValues; i++) {
+        totalSMA += parseFloat(tabGraphValues[i].SMA);
+        totalDP0 += parseFloat(tabGraphValues[i].DP0);
+    }
+    let SMA = totalSMA/nbValues;
+    let DP0 = totalDP0/nbValues;
+    var time = new Date();
+    var timeTxt = time.getHours()+":"+time.getMinutes()+":"+time.getSeconds();
+    console.log("[MOYENNE MINUTE "+timeTxt+"] SMA:"+SMA+" ("+totalSMA+"/"+nbValues+") DP0:"+DP0+" ("+totalDP0+"/"+nbValues+")");
+    //Actions en fonction des valeurs :
+    //==================================================================================
 
     //TODO
     //Si sma < 0 et les deux derniers dpo (2 dernieres séances) sont > 0 (petites barres verte) LONG
@@ -33,18 +55,25 @@ ipcRenderer.on('graph-new-values', (event, params) => {
     //TMP TO TEST: INSTANTS VALUES
     //Si sma < 0 et dp0 > 0  =>  BUY
     //Si sma > 0 et dp0 < 0  =>  SELL
-    if(params.SMA<0 && params.DP0>0 && !bot.inPosition){
+    if(SMA<0 && DP0>0 && !bot.inPosition){
+        bot.inPosition = true; //OK?
         bot.position.enter('ETHUSDT', 'BUYSIGNAL_GRAPH');
         $("#positionCurrency").html("ETH");
         ipcRenderer.send('show-message', '-- BUY --');
     }
-    if(params.SMA>0 && params.DP0<0 && bot.inPosition){
+    if(SMA>0 && DP0<0 && bot.inPosition){
+        bot.inPosition = false;
         bot.position.leave('ETHUSDT', 'SELLSIGNAL_GRAPH');
         $("#positionCurrency").html("USDT");
         ipcRenderer.send('show-message', '-- SELL --');
     }
 
-});
+    //==================================================================================
+    //Reset :
+    tabGraphValues = [];
+}, 1000*60)
+
+
 
 
 

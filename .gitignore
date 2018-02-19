@@ -1,5 +1,6 @@
 #Custom
 git-ignore
+.idea
 
 # Logs
 logs
