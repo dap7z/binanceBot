@@ -14,24 +14,25 @@
   "author": "Dap7z",
   "license": "MIT",
   "devDependencies": {
-    "electron": "~1.7.8"
+    "electron": "^1.7.13"
   },
   "dependencies": {
     "cheerio": "^1.0.0-rc.2",
     "dateformat": "^3.0.2",
     "dragula": "^3.7.2",
     "electron-context-menu": "^0.9.1",
-    "electron-tabs": "^0.9.0",
-    "got": "^8.0.1",
+    "electron-tabs": "^0.9.1",
+    "got": "^8.3.0",
     "imap-notify": "0.0.3",
     "jquery": "^1.7.4",
     "mail-listener-next": "^1.0.5",
     "node-binance-api": "^0.3.8",
+    "npm": "^5.8.0",
     "pg": "^6.4.2",
     "pg-hstore": "^2.3.2",
     "pg-query": "^0.11.0",
     "robotjs": "^0.4.7",
-    "sequelize": "^4.29.0",
+    "sequelize": "^4.37.6",
     "sqlite3": "^3.1.13",
     "toastr": "^2.1.4"
   }
